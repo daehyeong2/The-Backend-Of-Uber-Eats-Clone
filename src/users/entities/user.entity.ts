@@ -1,9 +1,20 @@
-import { Field, InputType, ObjectType } from '@nestjs/graphql';
+import {
+  Field,
+  InputType,
+  ObjectType,
+  registerEnumType,
+} from '@nestjs/graphql';
 import { CoreEntity } from '../../common/entities/core.entity';
 import { Column, Entity } from 'typeorm';
 import { IsEmail, IsString } from 'class-validator';
 
-type UserRole = 'client' | 'owner' | 'delivery';
+enum UserRole {
+  Client,
+  Owner,
+  Delivery,
+}
+
+registerEnumType(UserRole, { name: 'UserRole' });
 
 @InputType({ isAbstract: true })
 @ObjectType()
@@ -19,8 +30,8 @@ export class User extends CoreEntity {
   @IsString()
   password: string;
 
-  @Field(type => String)
-  @Column()
+  @Field(type => UserRole)
+  @Column({ type: 'enum', enum: UserRole })
   @IsString()
   role: UserRole;
 }
