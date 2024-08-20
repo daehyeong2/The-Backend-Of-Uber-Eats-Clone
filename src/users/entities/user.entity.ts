@@ -22,16 +22,13 @@ registerEnumType(UserRole, { name: 'UserRole' });
 export class User extends CoreEntity {
   @Field(type => String)
   @Column()
-  @IsEmail()
   email: string;
 
   @Field(type => String)
   @Column()
-  @IsString()
   password: string;
 
   @Field(type => UserRole)
   @Column({ type: 'enum', enum: UserRole })
-  @IsString()
   role: UserRole;
 }

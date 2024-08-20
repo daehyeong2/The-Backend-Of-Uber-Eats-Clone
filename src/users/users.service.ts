@@ -16,20 +16,16 @@ export class UsersService {
     email,
     password,
     role,
-  }: CreateAccountInput): Promise<CreateAccountOutput> {
+  }: CreateAccountInput): Promise<string | undefined> {
     try {
       const exists = await this.users.findOne({ email });
       if (exists) {
-        return { ok: false, error: '이미 사용 중인 email입니다.' };
+        return '해당 이메일은 이미 사용 중입니다.';
       }
       await this.users.save(this.users.create({ email, password, role }));
-      return { ok: true };
+      return;
     } catch (e) {
-      console.log(e);
-      if (typeof e === 'string') {
-        return { ok: false, error: e };
-      }
-      return { ok: false };
+      return '계정을 생성할 수 없습니다.';
     }
   }
 }
