@@ -51,7 +51,7 @@ export class UsersService {
           error: '비밀번호가 일치하지 않습니다.',
         };
       }
-      const token = jwt.sign({ id: user.id }, this.config.get('SECRET_KEY'));
+      const token = jwt.sign({ id: user.id }, this.config.get('PRIVATE_KEY'));
       return {
         ok: true,
         token,
