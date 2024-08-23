@@ -10,7 +10,7 @@ import { BeforeInsert, Column, Entity } from 'typeorm';
 import { InternalServerErrorException } from '@nestjs/common';
 import { IsEmail, IsEnum } from 'class-validator';
 
-enum UserRole {
+export enum UserRole {
   Client,
   Owner,
   Delivery,
