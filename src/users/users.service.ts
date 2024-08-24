@@ -6,11 +6,14 @@ import { CreateAccountInput } from './dtos/create-account.dto';
 import { LoginInput } from './dtos/login.dto';
 import { JwtService } from '../jwt/jwt.service';
 import { EditProfileInput } from './dtos/edit-profile.dto';
+import { Verification } from './entities/verification.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
+    @InjectRepository(Verification)
+    private readonly verifications: Repository<Verification>,
     private readonly jwtService: JwtService,
   ) {}
   async createAccount({
@@ -23,7 +26,14 @@ export class UsersService {
       if (exists) {
         return { ok: false, error: '해당 이메일은 이미 사용 중입니다.' };
       }
-      await this.users.save(this.users.create({ email, password, role }));
+      const user = await this.users.save(
+        this.users.create({ email, password, role }),
+      );
+      await this.verifications.save(
+        this.verifications.create({
+          user,
+        }),
+      );
       return { ok: true };
     } catch (e) {
       return { ok: false, error: '계정을 생성할 수 없습니다.' };
@@ -73,6 +83,7 @@ export class UsersService {
     const user = await this.users.findOne(userId);
     if (email) {
       user.email = email;
+      user.verified = false;
     }
     if (password) {
       user.password = password;
