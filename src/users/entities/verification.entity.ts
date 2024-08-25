@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
-import { CoreEntity } from '../../common/entities/core.entity';
 import { BeforeInsert, Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { User } from './user.entity';
+import { CoreEntity } from '@app/common/entities/core.entity';
 
 @InputType({ isAbstract: true })
 @ObjectType()

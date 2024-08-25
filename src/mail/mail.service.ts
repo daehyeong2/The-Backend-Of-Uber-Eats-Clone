@@ -1,8 +1,8 @@
 import got from 'got';
 import * as FormData from 'form-data';
 import { Inject, Injectable } from '@nestjs/common';
-import { CONFIG_OPTIONS } from '../common/common.constants';
 import { EmailVar, MailModuleOptions } from './mail.interfaces';
+import { CONFIG_OPTIONS } from '@app/common/common.constants';
 
 @Injectable()
 export class MailService {

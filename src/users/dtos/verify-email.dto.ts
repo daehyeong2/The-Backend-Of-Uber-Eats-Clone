@@ -1,6 +1,6 @@
 import { ArgsType, ObjectType, PickType } from '@nestjs/graphql';
-import { CoreOutput } from '../../common/dtos/output.dto';
 import { Verification } from '../entities/verification.entity';
+import { CoreOutput } from '@app/common/dtos/output.dto';
 
 @ObjectType()
 export class VerifyEmailOutput extends CoreOutput {}
