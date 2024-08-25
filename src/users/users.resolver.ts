@@ -91,7 +91,25 @@ export class UsersResolver {
   }
 
   @Mutation(returns => VerifyEmailOutput)
-  verifyEmailI(@Args() { code }: VerifyEmailInput) {
-    this.usersService.verifyEmail(code);
+  async verifyEmailI(
+    @Args() { code }: VerifyEmailInput,
+  ): Promise<VerifyEmailOutput> {
+    try {
+      const isVerified = await this.usersService.verifyEmail(code);
+      if (!isVerified) {
+        return {
+          ok: false,
+          error: '인증에 실패하였습니다.',
+        };
+      }
+      return {
+        ok: true,
+      };
+    } catch (e) {
+      return {
+        ok: false,
+        error: e as string,
+      };
+    }
   }
 }
