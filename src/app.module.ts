@@ -55,8 +55,8 @@ import { MailModule } from './mail/mail.module';
     MailModule.forRoot({
       isGlobal: true,
       apiKey: process.env.MAILGUN_API_KEY,
-      fromEmail: process.env.MAILGUN_DOMAIN_NAME,
-      domain: process.env.MAILGUN_FROM_EMAIL,
+      fromEmail: process.env.MAILGUN_FROM_EMAIL,
+      domain: process.env.MAILGUN_DOMAIN_NAME,
     }),
     UsersModule,
     MailModule,
