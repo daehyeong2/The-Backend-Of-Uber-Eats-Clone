@@ -4,3 +4,7 @@ export interface MailModuleOptions {
   fromEmail: string;
   isGlobal?: boolean;
 }
+export interface EmailVar {
+  key: string;
+  value: string;
+}

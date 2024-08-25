@@ -54,7 +54,7 @@ export class UsersResolver {
 
   @UseGuards(AuthGuard)
   @Mutation(returns => VerifyEmailOutput)
-  verifyEmailI(
+  verifyEmail(
     @AuthUser() { id }: User,
     @Args() { code }: VerifyEmailInput,
   ): Promise<VerifyEmailOutput> {
