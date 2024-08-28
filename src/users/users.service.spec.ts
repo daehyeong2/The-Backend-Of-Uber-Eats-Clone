@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 
 const mockRepository = () => ({
   findOne: jest.fn(),
+  findOneOrFail: jest.fn(),
   save: jest.fn(),
   create: jest.fn(),
   delete: jest.fn(),
@@ -137,6 +138,7 @@ describe('UserService', () => {
       email: 'test@test.com',
       password: 'test1234',
     };
+
     it('should fail if user does not exist', async () => {
       usersRepository.findOne.mockResolvedValue(null);
       const result = await service.login(loginArgs);
@@ -151,6 +153,7 @@ describe('UserService', () => {
         error: '해당 이메일의 계정을 찾을 수 없습니다.',
       });
     });
+
     it('should fail if the password is wrong', async () => {
       const mockedUser = {
         id: 1,
@@ -165,6 +168,7 @@ describe('UserService', () => {
         error: '비밀번호가 일치하지 않습니다.',
       });
     });
+
     it('should return token if password correct', async () => {
       const mockedUser = {
         id: 1,
@@ -193,7 +197,72 @@ describe('UserService', () => {
     });
   });
 
-  it.todo('findById');
-  it.todo('editProfile');
+  describe('findById', () => {
+    const findByIdArgs = {
+      id: 1,
+    };
+    it('should find an existing user', async () => {
+      usersRepository.findOneOrFail.mockResolvedValue(findByIdArgs);
+      const result = await service.findById(1);
+
+      expect(result).toEqual({ ok: true, user: findByIdArgs });
+    });
+
+    it('should fail if no user is found', async () => {
+      usersRepository.findOneOrFail.mockRejectedValue(new Error());
+      const result = await service.findById(1);
+
+      expect(result).toEqual({
+        ok: false,
+        error: '사용자를 찾을 수 없습니다.',
+      });
+    });
+  });
+
+  describe('editProfile', () => {
+    it('should change email', async () => {
+      const oldUser = {
+        email: 'test@test.com',
+        verified: true,
+      };
+      const editProfileArgs = {
+        userId: 1,
+        input: {
+          email: 'new@test.com',
+        },
+      };
+      const newVerification = {
+        code: 'code',
+      };
+      const newUser = {
+        email: editProfileArgs.input.email,
+        verified: false,
+      };
+
+      usersRepository.findOne.mockResolvedValue(oldUser);
+      verificationsRepository.create.mockReturnValue(newVerification);
+      verificationsRepository.save.mockResolvedValue(newVerification);
+
+      await service.editProfile(editProfileArgs.userId, editProfileArgs.input);
+
+      expect(usersRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(usersRepository.findOne).toHaveBeenCalledWith(
+        editProfileArgs.userId,
+      );
+
+      expect(verificationsRepository.create).toHaveBeenCalledWith({
+        user: newUser,
+      });
+      expect(verificationsRepository.save).toHaveBeenCalledWith(
+        newVerification,
+      );
+
+      expect(mailService.sendVerificationEmail).toHaveBeenCalledWith(
+        editProfileArgs.input.email,
+        newVerification.code,
+      );
+    });
+  });
+
   it.todo('verifyEmail');
 });
