@@ -142,13 +142,12 @@ export class UsersService {
       }
       return {
         ok: false,
-        error: '인증에 실패하였습니다.',
+        error: '인증 정보를 찾을 수 없습니다.',
       };
     } catch (e) {
-      console.log(e);
       return {
         ok: false,
-        error: e as string,
+        error: '인증에 실패하였습니다.',
       };
     }
   }
