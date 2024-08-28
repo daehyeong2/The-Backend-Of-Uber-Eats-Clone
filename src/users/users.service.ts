@@ -121,7 +121,7 @@ export class UsersService {
     } catch (e) {
       return {
         ok: false,
-        error: e as string,
+        error: '프로필 정보를 업데이트할 수 없습니다.',
       };
     }
   }
