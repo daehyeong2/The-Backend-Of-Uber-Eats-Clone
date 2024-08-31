@@ -4,6 +4,12 @@ import { AppModule } from '../src/app.module';
 import { getConnection } from 'typeorm';
 import * as request from 'supertest';
 
+jest.mock('got', () => {
+  return {
+    post: jest.fn(),
+  };
+});
+
 const GRAPHQL_ENDPOINT = '/graphql';
 
 describe('UserModule (e2e)', () => {
@@ -29,7 +35,8 @@ describe('UserModule (e2e)', () => {
       return request(app.getHttpServer())
         .post(GRAPHQL_ENDPOINT)
         .send({
-          query: `mutation {
+          query: `
+          mutation {
             createAccount(input: {
               email: "${EMAIL}",
               password: "1234",
@@ -47,7 +54,28 @@ describe('UserModule (e2e)', () => {
         });
     });
 
-    it.todo('should fail if account already exists');
+    it('should fail if account already exists', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .send({
+          query: `
+          mutation {
+            createAccount(input: {
+              email: "${EMAIL}",
+              password: "1234",
+              role: Client
+            }) {
+              ok
+              error
+            }
+          }`,
+        })
+        .expect(200)
+        .expect(res => {
+          expect(res.body.data.createAccount.ok).toBeFalsy();
+          expect(res.body.data.createAccount.error).toEqual(expect.any(String));
+        });
+    });
   });
   it.todo('userProfile');
   it.todo('login');
