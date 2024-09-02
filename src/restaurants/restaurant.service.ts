@@ -26,7 +26,8 @@ export class RestaurantService {
       newRestaurant.owner = owner;
       const categoryName = createRestaurantInput.categoryName
         .trim()
-        .toLowerCase();
+        .toLowerCase()
+        .replace(/ +/g, '');
       const categorySlug = categoryName.replaceAll(' ', '-');
       let category = await this.categories.findOne({ slug: categorySlug });
       if (!category) {
