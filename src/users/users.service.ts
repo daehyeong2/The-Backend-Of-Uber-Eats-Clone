@@ -100,10 +100,18 @@ export class UsersService {
     { email, password }: EditProfileInput,
   ): Promise<EditProfileOutput> {
     try {
+      const isEmailExist = await this.users.findOne({ email });
+      if (isEmailExist) {
+        return {
+          ok: false,
+          error: '해당 이메일은 이미 사용 중입니다.',
+        };
+      }
       const user = await this.users.findOne(userId);
       if (email) {
         user.email = email;
         user.verified = false;
+        this.verifications.delete({ user });
         const verification = await this.verifications.save(
           this.verifications.create({
             user,

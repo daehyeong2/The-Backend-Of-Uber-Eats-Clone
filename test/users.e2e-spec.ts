@@ -183,7 +183,6 @@ describe('UserModule (e2e)', () => {
               },
             },
           } = res;
-          console.log(res);
           expect(ok).toBeTruthy();
           expect(error).toBeNull();
           expect(id).toEqual(userId);
@@ -217,7 +216,6 @@ describe('UserModule (e2e)', () => {
             },
           } = res;
           expect(ok).toBeFalsy();
-          console.log(error);
           expect(error).toEqual(expect.any(String));
           expect(user).toBeNull();
         });
@@ -266,12 +264,72 @@ describe('UserModule (e2e)', () => {
         .expect(200)
         .expect(res => {
           const {
-            body: { errors },
+            body: {
+              errors: [{ message }],
+            },
           } = res;
-          expect(errors[0].message).toBe('Forbidden resource');
+          expect(message).toBe('Forbidden resource');
         });
     });
   });
+
+  describe('editProfile', () => {
+    const NEW_EMAIL = 'new@test.com';
+    it('should change email', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('X-JWT', jwtToken)
+        .send({
+          query: `
+            mutation {
+              editProfile(input: {email: "${NEW_EMAIL}"}){
+                ok
+                error
+              }
+            }
+        `,
+        })
+        .expect(200)
+        .expect(res => {
+          const {
+            body: {
+              data: {
+                editProfile: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toBeTruthy();
+          expect(error).toBeNull();
+        });
+    });
+    it('should have new email', () => {
+      return request(app.getHttpServer())
+        .post(GRAPHQL_ENDPOINT)
+        .set('X-JWT', jwtToken)
+        .send({
+          query: `
+                {
+                  me {
+                    email
+                    verified
+                  }
+                }
+              `,
+        })
+        .expect(200)
+        .expect(res => {
+          const {
+            body: {
+              data: {
+                me: { email, verified },
+              },
+            },
+          } = res;
+          expect(email).toBe(NEW_EMAIL);
+          expect(verified).toBeFalsy();
+        });
+    });
+  });
+
   it.todo('verifyEmail');
-  it.todo('editProfile');
 });

@@ -220,6 +220,19 @@ describe('UserService', () => {
   });
 
   describe('editProfile', () => {
+    it('should fail if the email exist', async () => {
+      usersRepository.findOne.mockResolvedValue(true);
+
+      const result = await service.editProfile(1, { email: '', password: '' });
+
+      expect(usersRepository.findOne).toHaveBeenCalledTimes(1);
+
+      expect(result).toEqual({
+        ok: false,
+        error: '해당 이메일은 이미 사용 중입니다.',
+      });
+    });
+
     it('should change email', async () => {
       const oldUser = {
         email: 'test@test.com',
@@ -239,14 +252,16 @@ describe('UserService', () => {
         verified: false,
       };
 
-      usersRepository.findOne.mockResolvedValue(oldUser);
+      usersRepository.findOne
+        .mockResolvedValueOnce(false)
+        .mockResolvedValueOnce(oldUser);
       verificationsRepository.create.mockReturnValue(newVerification);
       verificationsRepository.save.mockResolvedValue(newVerification);
 
       await service.editProfile(editProfileArgs.userId, editProfileArgs.input);
 
-      expect(usersRepository.findOne).toHaveBeenCalledTimes(1);
-      expect(usersRepository.findOne).toHaveBeenCalledWith(
+      expect(usersRepository.findOne).toHaveBeenCalledTimes(2);
+      expect(usersRepository.findOne).toHaveBeenLastCalledWith(
         editProfileArgs.userId,
       );
 
@@ -274,7 +289,9 @@ describe('UserService', () => {
         },
       };
 
-      usersRepository.findOne.mockResolvedValue({ password: 'old' });
+      usersRepository.findOne
+        .mockResolvedValueOnce(false)
+        .mockResolvedValueOnce({ password: 'old' });
 
       const result = await service.editProfile(
         editProfileArgs.userId,
@@ -295,7 +312,9 @@ describe('UserService', () => {
         input: { email: 'test@test.com' },
       };
 
-      usersRepository.findOne.mockRejectedValue(new Error());
+      usersRepository.findOne
+        .mockRejectedValueOnce(false)
+        .mockResolvedValueOnce(new Error());
 
       const result = await service.editProfile(
         editProfileArgs.userId,
