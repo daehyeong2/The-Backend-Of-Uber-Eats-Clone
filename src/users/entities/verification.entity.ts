@@ -3,6 +3,7 @@ import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { BeforeInsert, Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { User } from './user.entity';
 import { CoreEntity } from '@app/common/entities/core.entity';
+import { IsString } from 'class-validator';
 
 @InputType({ isAbstract: true })
 @ObjectType()
@@ -10,6 +11,7 @@ import { CoreEntity } from '@app/common/entities/core.entity';
 export class Verification extends CoreEntity {
   @Column()
   @Field(type => String)
+  @IsString()
   code: string;
 
   @OneToOne(type => User, { onDelete: 'CASCADE' })
