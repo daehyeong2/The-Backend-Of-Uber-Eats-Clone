@@ -6,7 +6,7 @@ import { CreateAccountOutput } from '@app/users/dtos/create-account.dto';
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@app/auth/auth.guard';
 import { AuthUser } from '@app/auth/auth-user.decorator';
-import { User } from 'aws-sdk/clients/budgets';
+import { User } from '@app/users/entities/user.entity';
 
 @Resolver(of => Restaurant)
 export class RestaurantResolver {
