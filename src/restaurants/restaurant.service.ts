@@ -21,6 +21,19 @@ export class RestaurantService {
     @InjectRepository(Category)
     private readonly categories: Repository<Category>,
   ) {}
+
+  async getOrCreateCategory(name: string): Promise<Category> {
+    const categoryName = name.trim().toLowerCase();
+    const categorySlug = categoryName.replaceAll(' ', '-');
+    let category = await this.categories.findOne({ slug: categorySlug });
+    if (!category) {
+      category = await this.categories.save(
+        this.categories.create({ name: categoryName, slug: categorySlug }),
+      );
+    }
+    return category;
+  }
+
   async createRestaurant(
     owner: User,
     createRestaurantInput: CreateRestaurantInput,
@@ -28,16 +41,9 @@ export class RestaurantService {
     try {
       const newRestaurant = this.restaurants.create(createRestaurantInput);
       newRestaurant.owner = owner;
-      const categoryName = createRestaurantInput.categoryName
-        .trim()
-        .toLowerCase();
-      const categorySlug = categoryName.replaceAll(' ', '-');
-      let category = await this.categories.findOne({ slug: categorySlug });
-      if (!category) {
-        category = await this.categories.save(
-          this.categories.create({ name: categoryName, slug: categorySlug }),
-        );
-      }
+      const category = await this.getOrCreateCategory(
+        createRestaurantInput.categoryName,
+      );
       newRestaurant.category = category;
       await this.restaurants.save(newRestaurant);
       return {
@@ -54,5 +60,28 @@ export class RestaurantService {
   async editRestaurant(
     owner: User,
     editRestaurantInput: EditRestaurantInput,
-  ): Promise<EditRestaurantOutput> {}
+  ): Promise<EditRestaurantOutput> {
+    try {
+      const restaurant = await this.restaurants.findOne(
+        editRestaurantInput.restaurantId,
+      );
+      if (!restaurant) {
+        return { ok: false, error: '가게를 찾을 수 없습니다.' };
+      }
+      if (owner.id !== restaurant.ownerId) {
+        return {
+          ok: false,
+          error: '자신의 가게만 수정할 수 있습니다.',
+        };
+      }
+      return {
+        ok: true,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: '가게를 수정할 수 없습니다.',
+      };
+    }
+  }
 }
