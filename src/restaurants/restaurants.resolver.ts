@@ -6,6 +6,10 @@ import { CreateAccountOutput } from '@app/users/dtos/create-account.dto';
 import { AuthUser } from '@app/auth/auth-user.decorator';
 import { User } from '@app/users/entities/user.entity';
 import { Role } from '@app/auth/role.decorator';
+import {
+  EditRestaurantInput,
+  EditRestaurantOutput,
+} from './dtos/edit-restaurant.dto';
 
 @Resolver(of => Restaurant)
 export class RestaurantResolver {
@@ -13,7 +17,7 @@ export class RestaurantResolver {
 
   @Mutation(returns => CreateAccountOutput)
   @Role(['Owner'])
-  async createRestaurant(
+  createRestaurant(
     @AuthUser() authUser: User,
     @Args('input') createRestaurantInput: CreateRestaurantInput,
   ): Promise<CreateAccountOutput> {
@@ -21,5 +25,16 @@ export class RestaurantResolver {
       authUser,
       createRestaurantInput,
     );
+  }
+
+  @Mutation(returns => EditRestaurantOutput)
+  @Role(['Owner'])
+  editRestaurant(
+    @AuthUser() authUser: User,
+    @Args('input') editRestaurantInput: EditRestaurantInput,
+  ): EditRestaurantOutput {
+    return {
+      ok: true,
+    };
   }
 }

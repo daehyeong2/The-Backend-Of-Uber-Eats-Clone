@@ -8,7 +8,7 @@ import { User } from '@app/users/entities/user.entity';
 export class AuthGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
   canActivate(context: ExecutionContext) {
-    const roles = this.reflector.get<AllowedRoles>(
+    const roles = this.reflector.get<AllowedRoles[]>(
       'roles',
       context.getHandler(),
     );
