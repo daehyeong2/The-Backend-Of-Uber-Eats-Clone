@@ -13,6 +13,10 @@ import {
   EditRestaurantOutput,
 } from './dtos/edit-restaurant.dto';
 import { CategoryRepository } from './repositories/category.repository';
+import {
+  DeleteRestaurantInput,
+  DeleteRestaurantOutput,
+} from './dtos/delete-restaurant.dto';
 
 @Injectable()
 export class RestaurantService {
@@ -21,6 +25,23 @@ export class RestaurantService {
     private readonly restaurants: Repository<Restaurant>,
     private readonly categories: CategoryRepository,
   ) {}
+
+  async testRestaurant(
+    ownerId: number,
+    restaurantId: number,
+  ): Promise<{ ok: boolean; error?: string; restaurant?: Restaurant }> {
+    const restaurant = await this.restaurants.findOne(restaurantId);
+    if (!restaurant) {
+      return { ok: false, error: '가게를 찾을 수 없습니다.' };
+    }
+    if (ownerId !== restaurant.ownerId) {
+      return {
+        ok: false,
+        error: '해당 가게의 변경 권한이 없습니다.',
+      };
+    }
+    return { ok: true, restaurant };
+  }
 
   async createRestaurant(
     owner: User,
@@ -50,17 +71,12 @@ export class RestaurantService {
     editRestaurantInput: EditRestaurantInput,
   ): Promise<EditRestaurantOutput> {
     try {
-      const restaurant = await this.restaurants.findOne(
+      const result = await this.testRestaurant(
+        owner.id,
         editRestaurantInput.restaurantId,
       );
-      if (!restaurant) {
-        return { ok: false, error: '가게를 찾을 수 없습니다.' };
-      }
-      if (owner.id !== restaurant.ownerId) {
-        return {
-          ok: false,
-          error: '자신의 가게만 수정할 수 있습니다.',
-        };
+      if (result.error) {
+        return result;
       }
       let category: Category = null;
       if (editRestaurantInput.categoryName) {
@@ -82,6 +98,27 @@ export class RestaurantService {
       return {
         ok: false,
         error: '가게를 수정할 수 없습니다.',
+      };
+    }
+  }
+
+  async deleteRestaurant(
+    owner: User,
+    { restaurantId }: DeleteRestaurantInput,
+  ): Promise<DeleteRestaurantOutput> {
+    try {
+      const result = await this.testRestaurant(owner.id, restaurantId);
+      if (result.error) {
+        return result;
+      }
+      await this.restaurants.delete(restaurantId);
+      return {
+        ok: true,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: '가게를 삭제할 수 없습니다.',
       };
     }
   }
