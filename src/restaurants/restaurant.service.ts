@@ -135,4 +135,8 @@ export class RestaurantService {
       return { ok: false, error: '모든 카테고리를 가져오는데 실패했습니다.' };
     }
   }
+
+  async countRestaurantByCategory(category: Category): Promise<number> {
+    return this.restaurants.count({ category });
+  }
 }
