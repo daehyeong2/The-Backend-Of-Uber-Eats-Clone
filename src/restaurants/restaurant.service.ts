@@ -19,6 +19,10 @@ import {
 } from './dtos/delete-restaurant.dto';
 import { AllCategoriesOutput } from './dtos/all-categories.dto';
 import { CategoryInput, CategoryOutput } from './dtos/category.dto';
+import {
+  RestaurantsInput,
+  RestaurantsOutput,
+} from '@app/common/dtos/restaurants.dto';
 
 @Injectable()
 export class RestaurantService {
@@ -27,6 +31,8 @@ export class RestaurantService {
     private readonly restaurants: Repository<Restaurant>,
     private readonly categories: CategoryRepository,
   ) {}
+
+  pageSize = 5;
 
   async testRestaurant(
     ownerId: number,
@@ -155,20 +161,44 @@ export class RestaurantService {
       }
       const restaurants = await this.restaurants.find({
         where: { category },
-        take: 5,
-        skip: (page - 1) * 5,
+        take: this.pageSize,
+        skip: (page - 1) * this.pageSize,
       });
-      category.restaurants = restaurants;
       const totalResults = await this.countRestaurantByCategory(category);
       return {
         ok: true,
-        ...category,
-        totalPages: Math.ceil(totalResults / 5),
+        category,
+        totalPages: Math.ceil(totalResults / this.pageSize),
+        totalResults,
+        restaurants,
       };
     } catch {
       return {
         ok: false,
         error: '카테고리를 찾는데 실패했습니다.',
+      };
+    }
+  }
+
+  async allRestaurants(
+    restaurantsInput: RestaurantsInput,
+  ): Promise<RestaurantsOutput> {
+    try {
+      const [restaurants, totalResults] = await this.restaurants.findAndCount({
+        take: this.pageSize,
+        skip: (restaurantsInput.page - 1) * this.pageSize,
+        relations: ['category'],
+      });
+      return {
+        ok: true,
+        results: restaurants,
+        totalPages: Math.ceil(totalResults / this.pageSize),
+        totalResults,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: '가게를 불러오는데 실패했습니다.',
       };
     }
   }
