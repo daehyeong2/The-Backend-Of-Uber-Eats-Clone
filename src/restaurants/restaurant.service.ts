@@ -31,6 +31,8 @@ import { RestaurantRepository } from './repositories/repository.repository';
 import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Dish } from './entities/dish.entity';
+import { DeleteDishInput, DeleteDishOutput } from './dtos/delete-dish.dto';
+import { EditDishInput, EditDishOutput } from './dtos/edit-dish.dto';
 
 @Injectable()
 export class RestaurantService {
@@ -42,7 +44,7 @@ export class RestaurantService {
 
   pageSize = 5;
 
-  async testRestaurant(
+  async checkRestaurant(
     ownerId: number,
     restaurantId: number,
   ): Promise<{ ok: boolean; error?: string; restaurant?: Restaurant }> {
@@ -57,6 +59,30 @@ export class RestaurantService {
       };
     }
     return { ok: true, restaurant };
+  }
+
+  async checkDish(
+    ownerId: number,
+    dishId: number,
+  ): Promise<{
+    ok: boolean;
+    error?: string;
+    restaurant?: Restaurant;
+    dish?: Dish;
+  }> {
+    const dish = await this.dishes.findOne(dishId, {
+      relations: ['restaurant'],
+    });
+    if (!dish) {
+      return { ok: false, error: '메뉴를 찾을 수 없습니다.' };
+    }
+    if (ownerId !== dish.restaurant.ownerId) {
+      return {
+        ok: false,
+        error: '해당 가게에 대한 권한이 없습니다.',
+      };
+    }
+    return { ok: true, restaurant: dish.restaurant, dish };
   }
 
   async createRestaurant(
@@ -87,7 +113,7 @@ export class RestaurantService {
     editRestaurantInput: EditRestaurantInput,
   ): Promise<EditRestaurantOutput> {
     try {
-      const { restaurant, ...result } = await this.testRestaurant(
+      const { restaurant, ...result } = await this.checkRestaurant(
         owner.id,
         editRestaurantInput.restaurantId,
       );
@@ -100,13 +126,11 @@ export class RestaurantService {
           editRestaurantInput.categoryName,
         );
       }
-      await this.restaurants.save([
-        {
-          id: editRestaurantInput.restaurantId,
-          ...editRestaurantInput,
-          ...(category && { category }),
-        },
-      ]);
+      await this.restaurants.save({
+        id: editRestaurantInput.restaurantId,
+        ...editRestaurantInput,
+        ...(category && { category }),
+      });
       return {
         ok: true,
       };
@@ -123,7 +147,7 @@ export class RestaurantService {
     { restaurantId }: DeleteRestaurantInput,
   ): Promise<DeleteRestaurantOutput> {
     try {
-      const { restaurant, ...result } = await this.testRestaurant(
+      const { restaurant, ...result } = await this.checkRestaurant(
         owner.id,
         restaurantId,
       );
@@ -279,7 +303,7 @@ export class RestaurantService {
     createDishInput: CreateDishInput,
   ): Promise<CreateDishOutput> {
     try {
-      const { restaurant, ...result } = await this.testRestaurant(
+      const { restaurant, ...result } = await this.checkRestaurant(
         owner.id,
         createDishInput.restaurantId,
       );
@@ -296,6 +320,54 @@ export class RestaurantService {
       return {
         ok: false,
         error: '메뉴를 추가할 수 없습니다.',
+      };
+    }
+  }
+
+  async deleteDish(
+    owner: User,
+    deleteDishInput: DeleteDishInput,
+  ): Promise<DeleteDishOutput> {
+    try {
+      const { restaurant, ...result } = await this.checkDish(
+        owner.id,
+        deleteDishInput.dishId,
+      );
+      if (result.error) {
+        return result;
+      }
+      await this.dishes.delete(deleteDishInput.dishId);
+      return {
+        ok: true,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: '메뉴를 삭제할 수 없습니다.',
+      };
+    }
+  }
+
+  async editDish(
+    owner: User,
+    editDishInput: EditDishInput,
+  ): Promise<EditDishOutput> {
+    try {
+      const { restaurant, ...result } = await this.checkDish(
+        owner.id,
+        editDishInput.dishId,
+      );
+      if (result.error) {
+        return result;
+      }
+      await this.dishes.save({ id: editDishInput.dishId, ...editDishInput });
+      return {
+        ok: true,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: '메뉴를 수정할 수 없습니다.',
       };
     }
   }
