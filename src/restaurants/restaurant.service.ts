@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Restaurant } from './entities/restaurant.entity';
-import { ILike } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import {
   CreateRestaurantInput,
   CreateRestaurantOutput,
@@ -29,12 +29,15 @@ import {
 } from './dtos/search-restaurant.dto';
 import { RestaurantRepository } from './repositories/repository.repository';
 import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Dish } from './entities/dish.entity';
 
 @Injectable()
 export class RestaurantService {
   constructor(
     private readonly restaurants: RestaurantRepository,
     private readonly categories: CategoryRepository,
+    @InjectRepository(Dish) private readonly dishes: Repository<Dish>,
   ) {}
 
   pageSize = 5;
@@ -50,7 +53,7 @@ export class RestaurantService {
     if (ownerId !== restaurant.ownerId) {
       return {
         ok: false,
-        error: '해당 가게의 변경 권한이 없습니다.',
+        error: '해당 가게에 대한 권한이 없습니다.',
       };
     }
     return { ok: true, restaurant };
@@ -84,7 +87,7 @@ export class RestaurantService {
     editRestaurantInput: EditRestaurantInput,
   ): Promise<EditRestaurantOutput> {
     try {
-      const result = await this.testRestaurant(
+      const { restaurant, ...result } = await this.testRestaurant(
         owner.id,
         editRestaurantInput.restaurantId,
       );
@@ -120,7 +123,10 @@ export class RestaurantService {
     { restaurantId }: DeleteRestaurantInput,
   ): Promise<DeleteRestaurantOutput> {
     try {
-      const result = await this.testRestaurant(owner.id, restaurantId);
+      const { restaurant, ...result } = await this.testRestaurant(
+        owner.id,
+        restaurantId,
+      );
       if (result.error) {
         return result;
       }
@@ -272,8 +278,25 @@ export class RestaurantService {
     owner: User,
     createDishInput: CreateDishInput,
   ): Promise<CreateDishOutput> {
-    return {
-      ok: true,
-    };
+    try {
+      const { restaurant, ...result } = await this.testRestaurant(
+        owner.id,
+        createDishInput.restaurantId,
+      );
+      if (result.error) {
+        return result;
+      }
+      await this.dishes.save(
+        this.dishes.create({ ...createDishInput, restaurant }),
+      );
+      return {
+        ok: true,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: '메뉴를 추가할 수 없습니다.',
+      };
+    }
   }
 }
