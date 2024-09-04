@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Restaurant } from './entities/restaurant.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import {
   CreateRestaurantInput,
   CreateRestaurantOutput,
@@ -23,6 +23,11 @@ import {
   RestaurantsInput,
   RestaurantsOutput,
 } from '@app/common/dtos/restaurants.dto';
+import { RestaurantInput, RestaurantOutput } from './dtos/restaurant.dto';
+import {
+  SearchRestaurantInput,
+  SearchRestaurantOutput,
+} from './dtos/search-restaurant.dto';
 
 @Injectable()
 export class RestaurantService {
@@ -199,6 +204,48 @@ export class RestaurantService {
       return {
         ok: false,
         error: '가게를 불러오는데 실패했습니다.',
+      };
+    }
+  }
+
+  async findRestaurantById({
+    restaurantId,
+  }: RestaurantInput): Promise<RestaurantOutput> {
+    try {
+      const restaurant = await this.restaurants.findOne({
+        id: restaurantId,
+      });
+      if (!restaurant) {
+        return {
+          ok: false,
+          error: '가게를 찾을 수 없습니다.',
+        };
+      }
+      return {
+        ok: true,
+        restaurant,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: '가게를 찾는데 실패했습니다.',
+      };
+    }
+  }
+
+  async searchRestaurantByName({
+    query,
+    page,
+  }: SearchRestaurantInput): Promise<SearchRestaurantOutput> {
+    try {
+      const searchTerm = query.replaceAll('%', '').replaceAll('_', '');
+      const [restaurants, totalResults] = await this.restaurants.findAndCount({
+        where: { name: Like(`%${searchTerm}%`) },
+      });
+    } catch {
+      return {
+        ok: false,
+        error: '가게를 검색하는데 실패했습니다.',
       };
     }
   }
