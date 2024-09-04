@@ -163,16 +163,18 @@ export class RestaurantService {
           error: '카테고리를 찾을 수 없습니다.',
         };
       }
-      const restaurants = await this.restaurants.find({
-        where: { category },
-        take: this.pageSize,
-        skip: (page - 1) * this.pageSize,
-      });
-      const totalResults = await this.countRestaurantByCategory(category);
+      const {
+        restaurants,
+        totalPages,
+        totalResults,
+      } = await this.restaurants.findByPagination(
+        { where: { category } },
+        page,
+      );
       return {
         ok: true,
         category,
-        totalPages: Math.ceil(totalResults / this.pageSize),
+        totalPages,
         totalResults,
         restaurants,
       };
