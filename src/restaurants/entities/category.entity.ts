@@ -24,11 +24,11 @@ export class Category extends CoreEntity {
   @Column({ nullable: true })
   icon?: string;
 
-  @Field(type => [Restaurant])
+  @Field(type => [Restaurant], { nullable: true })
   @OneToMany(
     type => Restaurant,
     restaurant => restaurant.category,
     { onDelete: 'SET NULL' },
   )
-  restaurants: Restaurant[];
+  restaurants?: Restaurant[];
 }
