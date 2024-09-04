@@ -28,6 +28,7 @@ import {
   SearchRestaurantOutput,
 } from './dtos/search-restaurant.dto';
 import { RestaurantRepository } from './repositories/repository.repository';
+import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
 
 @Injectable()
 export class RestaurantService {
@@ -218,8 +219,8 @@ export class RestaurantService {
     restaurantId,
   }: RestaurantInput): Promise<RestaurantOutput> {
     try {
-      const restaurant = await this.restaurants.findOne({
-        id: restaurantId,
+      const restaurant = await this.restaurants.findOne(restaurantId, {
+        relations: ['menu'],
       });
       if (!restaurant) {
         return {
@@ -265,5 +266,14 @@ export class RestaurantService {
         error: '가게를 검색하는데 실패했습니다.',
       };
     }
+  }
+
+  async createDish(
+    owner: User,
+    createDishInput: CreateDishInput,
+  ): Promise<CreateDishOutput> {
+    return {
+      ok: true,
+    };
   }
 }

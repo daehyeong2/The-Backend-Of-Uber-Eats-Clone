@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
+import { User, UserRole } from './entities/user.entity';
 import { Verification } from './entities/verification.entity';
 import { JwtService } from '@app/jwt/jwt.service';
 import { MailService } from '@app/mail/mail.service';
@@ -70,7 +70,7 @@ describe('UserService', () => {
     const createAccountArgs = {
       email: 'test@test.com',
       password: 'test1234',
-      role: 0,
+      role: UserRole.Client,
     };
 
     it('should fall if user exists', async () => {

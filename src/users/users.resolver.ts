@@ -44,6 +44,7 @@ export class UsersResolver {
     return this.usersService.findById(userProfileInput.userId);
   }
 
+  @Mutation(returns => EditProfileOutput)
   @UseGuards(AuthGuard)
   @Role(['Any'])
   editProfile(
