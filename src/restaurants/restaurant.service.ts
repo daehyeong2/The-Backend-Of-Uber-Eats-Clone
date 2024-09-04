@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Restaurant } from './entities/restaurant.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { ILike } from 'typeorm';
 import {
   CreateRestaurantInput,
   CreateRestaurantOutput,
@@ -28,12 +27,12 @@ import {
   SearchRestaurantInput,
   SearchRestaurantOutput,
 } from './dtos/search-restaurant.dto';
+import { RestaurantRepository } from './repositories/repository.repository';
 
 @Injectable()
 export class RestaurantService {
   constructor(
-    @InjectRepository(Restaurant)
-    private readonly restaurants: Repository<Restaurant>,
+    private readonly restaurants: RestaurantRepository,
     private readonly categories: CategoryRepository,
   ) {}
 
@@ -189,16 +188,21 @@ export class RestaurantService {
     restaurantsInput: RestaurantsInput,
   ): Promise<RestaurantsOutput> {
     try {
-      const [restaurants, totalResults] = await this.restaurants.findAndCount({
-        take: this.pageSize,
-        skip: (restaurantsInput.page - 1) * this.pageSize,
-        relations: ['category'],
-      });
+      const result = await this.restaurants.findByPagination(
+        { relations: ['category'] },
+        restaurantsInput.page,
+      );
+      if (!result) {
+        return {
+          ok: false,
+          error: '가게를 찾을 수 없습니다.',
+        };
+      }
       return {
         ok: true,
-        results: restaurants,
-        totalPages: Math.ceil(totalResults / this.pageSize),
-        totalResults,
+        totalPages: result.totalPages,
+        totalResults: result.totalResults,
+        results: result.restaurants,
       };
     } catch {
       return {
@@ -239,9 +243,20 @@ export class RestaurantService {
   }: SearchRestaurantInput): Promise<SearchRestaurantOutput> {
     try {
       const searchTerm = query.replaceAll('%', '').replaceAll('_', '');
-      const [restaurants, totalResults] = await this.restaurants.findAndCount({
-        where: { name: Like(`%${searchTerm}%`) },
-      });
+      const result = await this.restaurants.findByPagination(
+        { where: { name: ILike(`%${searchTerm}%`) } },
+        page,
+      );
+      if (!result) {
+        return {
+          ok: false,
+          error: '가게를 찾을 수 없습니다.',
+        };
+      }
+      return {
+        ok: true,
+        ...result,
+      };
     } catch {
       return {
         ok: false,
