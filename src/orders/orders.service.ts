@@ -33,12 +33,34 @@ export class OrderService {
           error: '가게를 찾을 수 없습니다.',
         };
       }
-      items.forEach(async ({ dishId, options }) => {
+      for (const { dishId, options } of items) {
         const dish = await this.dishes.findOne(dishId);
         if (!dish) {
+          return {
+            ok: false,
+            error: '음식을 찾을 수 없습니다.',
+          };
         }
-        await this.orderItems.save(this.orderItems.create({ dish, options }));
-      });
+        console.log(dish.price);
+        for (const option of options) {
+          const dishOption = dish.options.find(
+            dishOption => dishOption.name === option.name,
+          );
+          if (dishOption) {
+            if (dishOption.extra) {
+              console.log(`비용: ${dishOption.extra}`);
+            } else {
+              const dishOptionChoice = dishOption.choices.find(
+                optionChoice => optionChoice.name === option.choice,
+              );
+              if (dishOptionChoice?.extra) {
+                console.log(`비용: ${dishOptionChoice.extra}`);
+              }
+            }
+          }
+        }
+        // await this.orderItems.save(this.orderItems.create({ dish, options }));
+      }
       // const order = await this.orders.save(
       //   this.orders.create({ restaurant, customer }),
       // );
