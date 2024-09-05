@@ -3,8 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from './entities/order.entity';
 import { Repository } from 'typeorm';
 import { CreateOrderInput, CreateOrderOutput } from './dtos/create-order.dto';
-import { User } from 'aws-sdk/clients/budgets';
 import { Restaurant } from '@app/restaurants/entities/restaurant.entity';
+import { User } from '@app/users/entities/user.entity';
 
 @Injectable()
 export class OrderService {
@@ -27,6 +27,13 @@ export class OrderService {
           error: '가게를 찾을 수 없습니다.',
         };
       }
+      const order = await this.orders.save(
+        this.orders.create({ restaurant, customer }),
+      );
+      console.log(order);
+      return {
+        ok: true,
+      };
     } catch {
       return {
         ok: false,
