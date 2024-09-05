@@ -33,6 +33,8 @@ export class OrderService {
           error: '가게를 찾을 수 없습니다.',
         };
       }
+      let orderFinalPrice = 0;
+      const orderItems: OrderItem[] = [];
       for (const { dishId, options } of items) {
         const dish = await this.dishes.findOne(dishId);
         if (!dish) {
@@ -41,29 +43,38 @@ export class OrderService {
             error: '음식을 찾을 수 없습니다.',
           };
         }
-        console.log(dish.price);
+        let dishFinalPrice = dish.price;
         for (const option of options) {
           const dishOption = dish.options.find(
             dishOption => dishOption.name === option.name,
           );
           if (dishOption) {
             if (dishOption.extra) {
-              console.log(`비용: ${dishOption.extra}`);
+              dishFinalPrice += dishOption.extra;
             } else {
               const dishOptionChoice = dishOption.choices.find(
                 optionChoice => optionChoice.name === option.choice,
               );
               if (dishOptionChoice?.extra) {
-                console.log(`비용: ${dishOptionChoice.extra}`);
+                dishFinalPrice += dishOptionChoice.extra;
               }
             }
           }
         }
-        // await this.orderItems.save(this.orderItems.create({ dish, options }));
+        orderFinalPrice += dishFinalPrice;
+        const orderItem = await this.orderItems.save(
+          this.orderItems.create({ dish, options }),
+        );
+        orderItems.push(orderItem);
       }
-      // const order = await this.orders.save(
-      //   this.orders.create({ restaurant, customer }),
-      // );
+      const order = await this.orders.save(
+        this.orders.create({
+          restaurant,
+          customer,
+          total: orderFinalPrice,
+          items: orderItems,
+        }),
+      );
       return {
         ok: true,
       };
