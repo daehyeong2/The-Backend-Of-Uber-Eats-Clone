@@ -8,6 +8,7 @@ import { User, UserRole } from '@app/users/entities/user.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { Dish } from '@app/restaurants/entities/dish.entity';
 import { GetOrdersInput, GetOrdersOutput } from './dtos/get-orders.dto';
+import { GetOrderInput, GetOrderOutput } from './dtos/get-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -94,12 +95,16 @@ export class OrderService {
     try {
       let orders: Order[];
       if (user.role === UserRole.Client) {
-        orders = await this.orders.find({ where: { customer: user } });
+        orders = await this.orders.find({
+          where: { customer: user, ...(status && { status }) },
+        });
       } else if (user.role === UserRole.Delivery) {
-        orders = await this.orders.find({ where: { driver: user } });
+        orders = await this.orders.find({
+          where: { driver: user, ...(status && { status }) },
+        });
       } else if (user.role === UserRole.Owner) {
         orders = await this.orders.find({
-          where: { restaurant: { owner: user } },
+          where: { restaurant: { owner: user }, ...(status && { status }) },
           relations: ['restaurant', 'items', 'customer'],
         });
       }
@@ -111,6 +116,51 @@ export class OrderService {
       return {
         ok: false,
         error: '주문을 가져올 수 없습니다.',
+      };
+    }
+  }
+
+  async getOrder(
+    user: User,
+    { id: orderId }: GetOrderInput,
+  ): Promise<GetOrderOutput> {
+    try {
+      const order = await this.orders.findOne(orderId, {
+        relations: ['restaurant', 'items'],
+      });
+      if (!order) {
+        return {
+          ok: false,
+          error: '주문이 존재하지 않습니다.',
+        };
+      }
+
+      let allowed = true;
+
+      switch (user.role) {
+        case UserRole.Client:
+          if (order.customerId !== user.id) allowed = false;
+        case UserRole.Delivery:
+          if (order.driverId !== user.id) allowed = false;
+        case UserRole.Owner:
+          if (order.restaurant.ownerId !== user.id) allowed = false;
+      }
+
+      if (!allowed) {
+        return {
+          ok: false,
+          error: '해당 주문을 불러올 권한이 없습니다.',
+        };
+      }
+      return {
+        ok: true,
+        order,
+      };
+    } catch (e) {
+      console.log(e);
+      return {
+        ok: false,
+        error: '주문을 불러올 수 없습니다.',
       };
     }
   }
