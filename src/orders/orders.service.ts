@@ -4,9 +4,10 @@ import { Order } from './entities/order.entity';
 import { Repository } from 'typeorm';
 import { CreateOrderInput, CreateOrderOutput } from './dtos/create-order.dto';
 import { Restaurant } from '@app/restaurants/entities/restaurant.entity';
-import { User } from '@app/users/entities/user.entity';
+import { User, UserRole } from '@app/users/entities/user.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { Dish } from '@app/restaurants/entities/dish.entity';
+import { GetOrdersInput, GetOrdersOutput } from './dtos/get-orders.dto';
 
 @Injectable()
 export class OrderService {
@@ -37,7 +38,7 @@ export class OrderService {
       const orderItems: OrderItem[] = [];
       for (const { dishId, options } of items) {
         const dish = await this.dishes.findOne(dishId);
-        if (!dish) {
+        if (!dish || dish.restaurantId !== restaurantId) {
           return {
             ok: false,
             error: '음식을 찾을 수 없습니다.',
@@ -67,7 +68,7 @@ export class OrderService {
         );
         orderItems.push(orderItem);
       }
-      const order = await this.orders.save(
+      await this.orders.save(
         this.orders.create({
           restaurant,
           customer,
@@ -82,6 +83,34 @@ export class OrderService {
       return {
         ok: false,
         error: '주문을 생성하는데 실패했습니다.',
+      };
+    }
+  }
+
+  async getOrders(
+    user: User,
+    { status }: GetOrdersInput,
+  ): Promise<GetOrdersOutput> {
+    try {
+      let orders: Order[];
+      if (user.role === UserRole.Client) {
+        orders = await this.orders.find({ where: { customer: user } });
+      } else if (user.role === UserRole.Delivery) {
+        orders = await this.orders.find({ where: { driver: user } });
+      } else if (user.role === UserRole.Owner) {
+        orders = await this.orders.find({
+          where: { restaurant: { owner: user } },
+          relations: ['restaurant', 'items', 'customer'],
+        });
+      }
+      return {
+        ok: true,
+        orders,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: '주문을 가져올 수 없습니다.',
       };
     }
   }
