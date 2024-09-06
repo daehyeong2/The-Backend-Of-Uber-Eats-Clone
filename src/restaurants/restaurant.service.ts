@@ -103,7 +103,7 @@ export class RestaurantService {
     } catch {
       return {
         ok: false,
-        error: '가게 생성을 실패했습니다.',
+        error: '가게 생성에 실패했습니다.',
       };
     }
   }

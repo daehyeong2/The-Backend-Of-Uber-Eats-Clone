@@ -312,9 +312,7 @@ describe('UserService', () => {
         input: { email: 'test@test.com' },
       };
 
-      usersRepository.findOne
-        .mockRejectedValueOnce(false)
-        .mockResolvedValueOnce(new Error());
+      usersRepository.findOne.mockRejectedValue(new Error());
 
       const result = await service.editProfile(
         editProfileArgs.userId,
