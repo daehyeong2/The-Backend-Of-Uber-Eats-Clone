@@ -59,16 +59,17 @@ export class OrderResolver {
   @Mutation(returns => Boolean)
   async superTest(@Args('potatoId') potatoId: number) {
     await this.pubSub.publish('test', {
-      id: potatoId,
-      orderSubscription: `Potato ${potatoId} is ready.`,
+      orderSubscription: potatoId,
     });
     return true;
   }
 
   @Subscription(returns => String, {
-    filter: ({ id }, { potatoId }) => {
-      return id === potatoId;
+    filter: ({ orderSubscription }, { potatoId }) => {
+      return orderSubscription === potatoId;
     },
+    resolve: ({ orderSubscription }) =>
+      `Your potato with the id ${orderSubscription} is ready.`,
   })
   @Role(['Any'])
   orderSubscription(@Args('potatoId') potatoId: number) {
