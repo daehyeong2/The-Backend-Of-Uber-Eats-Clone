@@ -53,6 +53,12 @@ export class OrderResolver {
     return this.orderService.editOrder(user, editOrderInput);
   }
 
+  @Mutation(returns => Boolean)
+  superTest() {
+    pubsub.publish('test', { orderSubscription: 'Super Test.' });
+    return true;
+  }
+
   @Subscription(returns => String)
   orderSubscription() {
     return pubsub.asyncIterator('test');

@@ -66,7 +66,13 @@ import { OrderItem } from './orders/entities/order-item.entity';
     GraphQLModule.forRoot({
       autoSchemaFile: true,
       installSubscriptionHandlers: true,
-      context: ({ req }) => ({ user: req['user'] }),
+      context: ({ req, connection }) => {
+        if (req) {
+          return { user: req['user'] };
+        } else if (connection) {
+          console.log(connection);
+        }
+      },
     }),
     JwtModule.forRoot({ isGlobal: true, privateKey: process.env.PRIVATE_KEY }),
     MailModule.forRoot({
