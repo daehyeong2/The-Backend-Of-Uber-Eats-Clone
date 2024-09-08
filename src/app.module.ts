@@ -1,9 +1,4 @@
-import {
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  RequestMethod,
-} from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
@@ -11,7 +6,6 @@ import * as Joi from 'joi';
 import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user.entity';
 import { JwtModule } from './jwt/jwt.module';
-import { JwtMiddleware } from './jwt/jwt.middleware';
 import { Verification } from './users/entities/verification.entity';
 import { MailModule } from './mail/mail.module';
 import { Restaurant } from './restaurants/entities/restaurant.entity';
@@ -23,6 +17,11 @@ import { OrdersModule } from './orders/orders.module';
 import { Order } from './orders/entities/order.entity';
 import { OrderItem } from './orders/entities/order-item.entity';
 import { CommonModule } from './common/common.module';
+import {
+  createComplexityRule,
+  simpleEstimator,
+  fieldExtensionsEstimator,
+} from 'graphql-query-complexity';
 
 @Module({
   imports: [
@@ -75,6 +74,18 @@ import { CommonModule } from './common/common.module';
             : connection.context[TOKEN_KEY],
         };
       },
+      validationRules: [
+        createComplexityRule({
+          maximumComplexity: 50,
+          estimators: [
+            fieldExtensionsEstimator(),
+            simpleEstimator({ defaultComplexity: 1 }),
+          ],
+          onComplete: (complexity: number) => {
+            console.log('Query Complexity:', complexity);
+          },
+        }),
+      ],
     }),
     JwtModule.forRoot({ isGlobal: true, privateKey: process.env.PRIVATE_KEY }),
     MailModule.forRoot({
