@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Order, OrderStatus } from './entities/order.entity';
 import { Repository } from 'typeorm';
@@ -10,6 +10,8 @@ import { Dish } from '@app/restaurants/entities/dish.entity';
 import { GetOrdersInput, GetOrdersOutput } from './dtos/get-orders.dto';
 import { GetOrderInput, GetOrderOutput } from './dtos/get-order.dto';
 import { EditOrderInput, EditOrderOutput } from './dtos/edit-order.dto';
+import { NEW_PENDING_ORDER, PUB_SUB } from '@app/common/common.constants';
+import { PubSub } from 'graphql-subscriptions';
 
 @Injectable()
 export class OrderService {
@@ -22,6 +24,7 @@ export class OrderService {
     private readonly restaurants: Repository<Restaurant>,
     @InjectRepository(Dish)
     private readonly dishes: Repository<Dish>,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
   canAccessOrder(user: User, order: Order): boolean {
@@ -60,19 +63,21 @@ export class OrderService {
           };
         }
         let dishFinalPrice = dish.price;
-        for (const option of options) {
-          const dishOption = dish.options.find(
-            dishOption => dishOption.name === option.name,
-          );
-          if (dishOption) {
-            if (dishOption.extra) {
-              dishFinalPrice += dishOption.extra;
-            } else {
-              const dishOptionChoice = dishOption.choices.find(
-                optionChoice => optionChoice.name === option.choice,
-              );
-              if (dishOptionChoice?.extra) {
-                dishFinalPrice += dishOptionChoice.extra;
+        if (options) {
+          for (const option of options) {
+            const dishOption = dish.options.find(
+              dishOption => dishOption.name === option.name,
+            );
+            if (dishOption) {
+              if (dishOption.extra) {
+                dishFinalPrice += dishOption.extra;
+              } else {
+                const dishOptionChoice = dishOption.choices.find(
+                  optionChoice => optionChoice.name === option.choice,
+                );
+                if (dishOptionChoice?.extra) {
+                  dishFinalPrice += dishOptionChoice.extra;
+                }
               }
             }
           }
@@ -83,7 +88,7 @@ export class OrderService {
         );
         orderItems.push(orderItem);
       }
-      await this.orders.save(
+      const order = await this.orders.save(
         this.orders.create({
           restaurant,
           customer,
@@ -91,6 +96,9 @@ export class OrderService {
           items: orderItems,
         }),
       );
+      this.pubSub.publish(NEW_PENDING_ORDER, {
+        pendingOrders: order,
+      });
       return {
         ok: true,
       };

@@ -14,4 +14,4 @@ Orders Subscription:
 - Order Status (Customer, Delivery, Owner) (T: editOrder)
 - Pending Pickup Order (Delivery)
 
-- Payments (CRON)
+Payments (CRON)
