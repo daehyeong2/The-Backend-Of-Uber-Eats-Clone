@@ -17,6 +17,7 @@ import {
   PUB_SUB,
 } from '@app/common/common.constants';
 import { OrderUpdatesInput } from './dtos/order-updates.dto';
+import { TakeOrderInput, TakeOrderOutput } from './dtos/take-order.dto';
 
 @Resolver(of => Order)
 @Role(['Client'])
@@ -93,5 +94,14 @@ export class OrderResolver {
     @Args('input') orderUpdatesInput: OrderUpdatesInput,
   ) {
     return this.orderService.orderUpdates(user, orderUpdatesInput);
+  }
+
+  @Mutation(returns => TakeOrderOutput)
+  @Role(['Delivery'])
+  takeOrder(
+    @AuthUser() driver: User,
+    @Args('input') takeOrderInput: TakeOrderInput,
+  ): Promise<TakeOrderOutput> {
+    return this.orderService.takeOrder(driver, takeOrderInput);
   }
 }

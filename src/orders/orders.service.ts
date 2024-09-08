@@ -18,6 +18,7 @@ import {
 } from '@app/common/common.constants';
 import { PubSub } from 'graphql-subscriptions';
 import { OrderUpdatesInput } from './dtos/order-updates.dto';
+import { TakeOrderInput, TakeOrderOutput } from './dtos/take-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -259,6 +260,41 @@ export class OrderService {
       return {
         ok: false,
         error: 'orderUpdates 과정 중 에러가 발생했습니다.',
+      };
+    }
+  }
+
+  async takeOrder(
+    driver: User,
+    { id: orderId }: TakeOrderInput,
+  ): Promise<TakeOrderOutput> {
+    try {
+      const order = await this.orders.findOne(orderId);
+      if (!order) {
+        return {
+          ok: false,
+          error: '주문을 찾을 수 없습니다.',
+        };
+      }
+      if (order.driver) {
+        return {
+          ok: false,
+          error: '해당 주문은 이미 배달 기사가 존재합니다.',
+        };
+      }
+
+      await this.orders.save({ id: orderId, driver });
+      await this.pubSub.publish(NEW_ORDER_UPDATE, {
+        orderUpdates: { ...order, status: OrderStatus.PickedUp, driver },
+      });
+
+      return {
+        ok: true,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: '배달기사를 할당하는데 실패했습니다.',
       };
     }
   }
