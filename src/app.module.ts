@@ -22,6 +22,8 @@ import {
   simpleEstimator,
   fieldExtensionsEstimator,
 } from 'graphql-query-complexity';
+import { PaymentsModule } from './payments/payments.module';
+import { Payment } from './payments/entities/payment.entity';
 
 @Module({
   imports: [
@@ -61,6 +63,7 @@ import {
         Dish,
         Order,
         OrderItem,
+        Payment,
       ],
     }),
     GraphQLModule.forRoot({
@@ -97,6 +100,7 @@ import {
     RestaurantsModule,
     AuthModule,
     OrdersModule,
+    PaymentsModule,
   ],
   controllers: [],
   providers: [],
