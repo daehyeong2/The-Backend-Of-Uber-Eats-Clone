@@ -57,10 +57,10 @@ export class OrderResolver {
   }
 
   @Subscription(returns => Order, {
-    filter: (payload, _, context) => {
-      console.log(payload);
-      return true;
+    filter: ({ pendingOrders: { ownerId } }, _, { user: { id } }) => {
+      return ownerId === id;
     },
+    resolve: ({ pendingOrders: { order } }) => order,
   })
   @Role(['Owner'])
   pendingOrders() {

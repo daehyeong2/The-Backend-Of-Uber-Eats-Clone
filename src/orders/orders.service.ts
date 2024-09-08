@@ -97,7 +97,7 @@ export class OrderService {
         }),
       );
       this.pubSub.publish(NEW_PENDING_ORDER, {
-        pendingOrders: order,
+        pendingOrders: { order, ownerId: restaurant.ownerId },
       });
       return {
         ok: true,
