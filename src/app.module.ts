@@ -76,14 +76,11 @@ import {
       },
       validationRules: [
         createComplexityRule({
-          maximumComplexity: 50,
+          maximumComplexity: 200,
           estimators: [
             fieldExtensionsEstimator(),
             simpleEstimator({ defaultComplexity: 1 }),
           ],
-          onComplete: (complexity: number) => {
-            console.log('Query Complexity:', complexity);
-          },
         }),
       ],
     }),

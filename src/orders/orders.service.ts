@@ -17,6 +17,7 @@ import {
   PUB_SUB,
 } from '@app/common/common.constants';
 import { PubSub } from 'graphql-subscriptions';
+import { OrderUpdatesInput } from './dtos/order-updates.dto';
 
 @Injectable()
 export class OrderService {
@@ -36,13 +37,15 @@ export class OrderService {
     switch (user.role) {
       case UserRole.Client:
         if (order.customerId !== user.id) return false;
+        break;
       case UserRole.Delivery:
         if (order.driverId !== user.id) return false;
+        break;
       case UserRole.Owner:
         if (order.restaurant.ownerId !== user.id) return false;
-      default:
-        return true;
+        break;
     }
+    return true;
   }
 
   async createOrder(
@@ -242,6 +245,20 @@ export class OrderService {
       return {
         ok: false,
         error: '주문을 수정하는데 실패했습니다.',
+      };
+    }
+  }
+
+  async orderUpdates(user: User, orderUpdatesInput: OrderUpdatesInput) {
+    try {
+      const order = await this.orders.findOne(orderUpdatesInput.id);
+      const ok = this.canAccessOrder(user, order);
+      if (!ok) return { ok: false, error: '해당 주문에 대한 권한이 없습니다.' };
+      return this.pubSub.asyncIterator(NEW_ORDER_UPDATE);
+    } catch {
+      return {
+        ok: false,
+        error: 'orderUpdates 과정 중 에러가 발생했습니다.',
       };
     }
   }
