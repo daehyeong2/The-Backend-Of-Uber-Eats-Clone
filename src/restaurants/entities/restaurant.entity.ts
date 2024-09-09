@@ -60,4 +60,12 @@ export class Restaurant extends CoreEntity {
     { onDelete: 'SET NULL' },
   )
   menu: Dish[];
+
+  @Field(type => Boolean)
+  @Column({ default: false })
+  isPromoted: boolean;
+
+  @Field(type => Date, { nullable: true })
+  @Column({ nullable: true })
+  promotedUntil: Date;
 }

@@ -10,6 +10,9 @@ export class RestaurantRepository extends Repository<Restaurant> {
       ...options,
       take: this.pageSize,
       skip: (page - 1) * this.pageSize,
+      order: {
+        isPromoted: 'DESC',
+      },
     });
     if (!restaurants) {
       return null;

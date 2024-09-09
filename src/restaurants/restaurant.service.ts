@@ -251,6 +251,9 @@ export class RestaurantService {
     try {
       const restaurant = await this.restaurants.findOne(restaurantId, {
         relations: ['menu'],
+        order: {
+          isPromoted: 'DESC',
+        },
       });
       if (!restaurant) {
         return {

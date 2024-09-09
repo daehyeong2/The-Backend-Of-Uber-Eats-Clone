@@ -45,6 +45,13 @@ export class PaymentService {
           restaurant,
         }),
       );
+
+      restaurant.isPromoted = true;
+      const date = new Date();
+      date.setDate(date.getDate() + 7);
+      restaurant.promotedUntil = date;
+      await this.restaurants.save(restaurant);
+
       return {
         ok: true,
       };
@@ -66,15 +73,5 @@ export class PaymentService {
         error: '결제 정보를 불러오는데 실패했습니다.',
       };
     }
-  }
-
-  @Cron('30 * * * * *')
-  checkForPayments() {
-    console.log('Checking for payments... (cron)');
-  }
-
-  @Interval(5000)
-  checkForPaymentsInterval() {
-    console.log('Checking for payments... (interval)');
   }
 }
