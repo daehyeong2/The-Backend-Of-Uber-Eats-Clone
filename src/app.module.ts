@@ -24,6 +24,7 @@ import {
 } from 'graphql-query-complexity';
 import { PaymentsModule } from './payments/payments.module';
 import { Payment } from './payments/entities/payment.entity';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -87,6 +88,7 @@ import { Payment } from './payments/entities/payment.entity';
         }),
       ],
     }),
+    ScheduleModule.forRoot(),
     JwtModule.forRoot({ isGlobal: true, privateKey: process.env.PRIVATE_KEY }),
     MailModule.forRoot({
       isGlobal: true,

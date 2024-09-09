@@ -9,6 +9,7 @@ import {
 import { Restaurant } from '@app/restaurants/entities/restaurant.entity';
 import { User } from '@app/users/entities/user.entity';
 import { GetPaymentsOutput } from './dtos/get-payments.dto';
+import { Cron, Interval } from '@nestjs/schedule';
 
 @Injectable()
 export class PaymentService {
@@ -65,5 +66,15 @@ export class PaymentService {
         error: '결제 정보를 불러오는데 실패했습니다.',
       };
     }
+  }
+
+  @Cron('30 * * * * *')
+  checkForPayments() {
+    console.log('Checking for payments... (cron)');
+  }
+
+  @Interval(5000)
+  checkForPaymentsInterval() {
+    console.log('Checking for payments... (interval)');
   }
 }
