@@ -32,7 +32,6 @@ export class User extends CoreEntity {
 
   @Field(type => String)
   @Column({ select: false })
-  @Length(8, 32)
   password: string;
 
   @Field(type => UserRole)
