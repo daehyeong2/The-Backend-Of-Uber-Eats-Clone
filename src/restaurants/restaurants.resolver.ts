@@ -28,7 +28,7 @@ import { CategoryInput, CategoryOutput } from './dtos/category.dto';
 import {
   RestaurantsInput,
   RestaurantsOutput,
-} from '@app/common/dtos/restaurants.dto';
+} from '@app/restaurants/dtos/restaurants.dto';
 import { RestaurantInput, RestaurantOutput } from './dtos/restaurant.dto';
 import {
   SearchRestaurantInput,

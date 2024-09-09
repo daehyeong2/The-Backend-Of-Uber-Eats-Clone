@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 import { RestaurantService } from './restaurant.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Dish } from './entities/dish.entity';
-import { RestaurantRepository } from './repositories/repository.repository';
+import { RestaurantRepository } from './repositories/restaurant.repository';
 import { CategoryRepository } from './repositories/category.repository';
 import { ILike, Repository } from 'typeorm';
 import { User } from '@app/users/entities/user.entity';

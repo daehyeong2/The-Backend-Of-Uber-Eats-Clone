@@ -17,11 +17,6 @@ import { OrdersModule } from './orders/orders.module';
 import { Order } from './orders/entities/order.entity';
 import { OrderItem } from './orders/entities/order-item.entity';
 import { CommonModule } from './common/common.module';
-import {
-  createComplexityRule,
-  simpleEstimator,
-  fieldExtensionsEstimator,
-} from 'graphql-query-complexity';
 import { PaymentsModule } from './payments/payments.module';
 import { Payment } from './payments/entities/payment.entity';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -69,6 +64,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
+      introspection: true,
       installSubscriptionHandlers: true,
       context: ({ req, connection }) => {
         const TOKEN_KEY = 'X-JWT';
@@ -78,15 +74,6 @@ import { ScheduleModule } from '@nestjs/schedule';
             : connection.context[TOKEN_KEY],
         };
       },
-      validationRules: [
-        createComplexityRule({
-          maximumComplexity: 200,
-          estimators: [
-            fieldExtensionsEstimator(),
-            simpleEstimator({ defaultComplexity: 1 }),
-          ],
-        }),
-      ],
     }),
     ScheduleModule.forRoot(),
     JwtModule.forRoot({ isGlobal: true, privateKey: process.env.PRIVATE_KEY }),

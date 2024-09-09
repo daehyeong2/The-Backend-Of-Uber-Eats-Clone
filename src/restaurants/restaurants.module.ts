@@ -7,7 +7,7 @@ import {
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RestaurantService } from './restaurant.service';
 import { CategoryRepository } from './repositories/category.repository';
-import { RestaurantRepository } from './repositories/repository.repository';
+import { RestaurantRepository } from './repositories/restaurant.repository';
 import { Dish } from './entities/dish.entity';
 
 @Module({

@@ -21,13 +21,13 @@ import { CategoryInput, CategoryOutput } from './dtos/category.dto';
 import {
   RestaurantsInput,
   RestaurantsOutput,
-} from '@app/common/dtos/restaurants.dto';
+} from '@app/restaurants/dtos/restaurants.dto';
 import { RestaurantInput, RestaurantOutput } from './dtos/restaurant.dto';
 import {
   SearchRestaurantInput,
   SearchRestaurantOutput,
 } from './dtos/search-restaurant.dto';
-import { RestaurantRepository } from './repositories/repository.repository';
+import { RestaurantRepository } from './repositories/restaurant.repository';
 import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Dish } from './entities/dish.entity';
