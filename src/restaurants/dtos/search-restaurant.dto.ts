@@ -1,4 +1,3 @@
-import { CoreOutput } from '@app/common/dtos/output.dto';
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { Restaurant } from '../entities/restaurant.entity';
 import {

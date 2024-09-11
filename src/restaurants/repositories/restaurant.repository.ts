@@ -3,7 +3,7 @@ import { Restaurant } from '../entities/restaurant.entity';
 
 @EntityRepository(Restaurant)
 export class RestaurantRepository extends Repository<Restaurant> {
-  pageSize = 5;
+  pageSize = 3;
 
   async findByPagination(options, page: number) {
     const [restaurants, totalResults] = await this.findAndCount({

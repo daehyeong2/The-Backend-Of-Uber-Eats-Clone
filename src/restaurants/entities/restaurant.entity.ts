@@ -20,7 +20,7 @@ export class Restaurant extends CoreEntity {
   @Field(type => String)
   @IsString()
   @Column()
-  coverImage: string;
+  coverImg: string;
 
   @Field(type => String)
   @Column()
