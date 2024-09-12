@@ -222,7 +222,7 @@ export class RestaurantService {
   ): Promise<RestaurantsOutput> {
     try {
       const result = await this.restaurants.findByPagination(
-        { relations: ['category'] },
+        null,
         restaurantsInput.page,
       );
       if (!result) {
