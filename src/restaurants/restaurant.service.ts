@@ -33,6 +33,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Dish } from './entities/dish.entity';
 import { DeleteDishInput, DeleteDishOutput } from './dtos/delete-dish.dto';
 import { EditDishInput, EditDishOutput } from './dtos/edit-dish.dto';
+import { MyRestaurantsOutput } from './dtos/my-restaurants.dto';
 
 @Injectable()
 export class RestaurantService {
@@ -371,6 +372,21 @@ export class RestaurantService {
       return {
         ok: false,
         error: '메뉴를 수정할 수 없습니다.',
+      };
+    }
+  }
+
+  async myRestaurants(owner: User): Promise<MyRestaurantsOutput> {
+    try {
+      const restaurants = await this.restaurants.find({ owner });
+      return {
+        ok: true,
+        restaurants,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: '가게를 불러오는데 실패했습니다.',
       };
     }
   }
