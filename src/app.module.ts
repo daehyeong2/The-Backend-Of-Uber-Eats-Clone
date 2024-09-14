@@ -21,6 +21,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { Payment } from './payments/entities/payment.entity';
 import { ScheduleModule } from '@nestjs/schedule';
 import { PaginationOutput } from './common/dtos/pagination.dto';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -91,6 +92,7 @@ import { PaginationOutput } from './common/dtos/pagination.dto';
     AuthModule,
     OrdersModule,
     PaymentsModule,
+    UploadsModule,
   ],
   controllers: [],
   providers: [],
