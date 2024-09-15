@@ -34,6 +34,10 @@ import { Dish } from './entities/dish.entity';
 import { DeleteDishInput, DeleteDishOutput } from './dtos/delete-dish.dto';
 import { EditDishInput, EditDishOutput } from './dtos/edit-dish.dto';
 import { MyRestaurantsOutput } from './dtos/my-restaurants.dto';
+import {
+  MyRestaurantInput,
+  MyRestaurantOutput,
+} from './dtos/my-restaurant.dto';
 
 @Injectable()
 export class RestaurantService {
@@ -100,6 +104,7 @@ export class RestaurantService {
       await this.restaurants.save(newRestaurant);
       return {
         ok: true,
+        restaurantId: newRestaurant.id,
       };
     } catch {
       return {
@@ -382,6 +387,30 @@ export class RestaurantService {
       return {
         ok: true,
         restaurants,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: '가게를 불러오는데 실패했습니다.',
+      };
+    }
+  }
+
+  async myRestaurant(
+    owner: User,
+    { id }: MyRestaurantInput,
+  ): Promise<MyRestaurantOutput> {
+    try {
+      const restaurant = await this.restaurants.findOne({ owner, id });
+      if (!restaurant) {
+        return {
+          ok: false,
+          error: '가게를 찾을 수 없습니다.',
+        };
+      }
+      return {
+        ok: true,
+        restaurant,
       };
     } catch {
       return {
