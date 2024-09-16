@@ -78,8 +78,16 @@ export class OrderService {
               dishOption => dishOption.name === option.name,
             );
             if (dishOption) {
-              if (dishOption.extra) {
+              if (typeof dishOption.extra === 'number') {
                 dishFinalPrice += dishOption.extra;
+                if (dishOption.choices && dishOption.choices.length > 0) {
+                  const dishOptionChoice = dishOption.choices.find(
+                    optionChoice => optionChoice.name === option.choice,
+                  );
+                  if (dishOptionChoice?.extra) {
+                    dishFinalPrice += dishOptionChoice.extra;
+                  }
+                }
               } else {
                 const dishOptionChoice = dishOption.choices.find(
                   optionChoice => optionChoice.name === option.choice,
@@ -110,6 +118,7 @@ export class OrderService {
       });
       return {
         ok: true,
+        orderId: order.id,
       };
     } catch {
       return {
