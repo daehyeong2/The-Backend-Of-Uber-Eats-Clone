@@ -294,7 +294,7 @@ export class OrderService {
 
       await this.orders.save({ id: orderId, driver });
       await this.pubSub.publish(NEW_ORDER_UPDATE, {
-        orderUpdates: { ...order, status: OrderStatus.PickedUp, driver },
+        orderUpdates: { ...order, driver },
       });
 
       return {
